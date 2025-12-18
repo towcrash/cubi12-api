@@ -1,5 +1,6 @@
 namespace Cubitwelve.Src.Models
 {
+    //Base model
     public abstract class BaseModel
     {
         public int Id { get; set; }
