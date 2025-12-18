@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main", "dev" ]
     paths:
-      - 'Cubitwelve/**' # Solo se activa si tocas el backend
+      - 'Cubitwelve/**' 
 
 jobs:
   build-and-deploy:
@@ -28,5 +28,5 @@ jobs:
         tags: ferestrom/cubi12-backend:latest
 
     - name: Trigger Render Deploy
-      # Esto hace una petición a la URL secreta para avisar a Render
+
       run: curl ${{ secrets.RENDER_HOOK_BACKEND }}

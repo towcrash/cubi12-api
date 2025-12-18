@@ -52,17 +52,19 @@ namespace Cubitwelve.Src.Extensions
 
         private static void AddDbContext(IServiceCollection services)
         {
-            
             var connectionUrl = Env.GetString("DB_CONNECTION");
 
-            services.AddDbContext<DataContext>(opt => {
-                
-                opt.UseNpgsql(connectionUrl, npgsqlOpt => {
-                    
+            var connectionString = BuildConnectionString(connectionUrl);
+
+
+            services.AddDbContext<DataContext>(opt =>
+            {
+                opt.UseNpgsql(connectionString, npgsqlOpt =>
+                {
                     npgsqlOpt.EnableRetryOnFailure(
                         maxRetryCount: 10,
                         maxRetryDelay: System.TimeSpan.FromSeconds(30),
-                        errorCodesToAdd: null 
+                        errorCodesToAdd: null
                     );
                 });
             });
@@ -101,7 +103,31 @@ namespace Cubitwelve.Src.Extensions
         {
             services.AddHttpContextAccessor();
         }
+        private static string BuildConnectionString(string connectionUrl)
+        {
+           
+            if (string.IsNullOrEmpty(connectionUrl) || !connectionUrl.StartsWith("postgres://"))
+            {
+                return connectionUrl;
+            }
 
+            
+            var databaseUri = new Uri(connectionUrl);
+            var userInfo = databaseUri.UserInfo.Split(':');
+
+          
+            var builder = new NpgsqlConnectionStringBuilder
+            {
+                Host = databaseUri.Host,
+                Port = databaseUri.Port,
+                Username = userInfo[0],
+                Password = userInfo[1],
+                Database = databaseUri.LocalPath.TrimStart('/'),
+                SslMode = SslMode.Disable 
+            };
+
+            return builder.ToString();
+        }
 
     }
 }
