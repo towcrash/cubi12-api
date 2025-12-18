@@ -18,6 +18,7 @@ namespace Cubitwelve.Src.Extensions
     {
         public static void AddApplicationServices(this IServiceCollection services, IConfiguration config)
         {
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             InitEnvironmentVariables();
             AddAutoMapper(services);
             AddServices(services);
