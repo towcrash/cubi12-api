@@ -52,14 +52,17 @@ namespace Cubitwelve.Src.Extensions
 
         private static void AddDbContext(IServiceCollection services)
         {
+            
             var connectionUrl = Env.GetString("DB_CONNECTION");
 
             services.AddDbContext<DataContext>(opt => {
-                opt.UseSqlServer(connectionUrl, sqlServerOpt => {
-                    sqlServerOpt.EnableRetryOnFailure(
+                
+                opt.UseNpgsql(connectionUrl, npgsqlOpt => {
+                    
+                    npgsqlOpt.EnableRetryOnFailure(
                         maxRetryCount: 10,
                         maxRetryDelay: System.TimeSpan.FromSeconds(30),
-                        errorNumbersToAdd: null
+                        errorCodesToAdd: null 
                     );
                 });
             });

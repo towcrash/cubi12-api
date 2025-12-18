@@ -1,6 +1,5 @@
 using Cubitwelve.Src.Extensions;
 using Cubitwelve.Src.Middlewares;
-
 var builder = WebApplication.CreateBuilder(args);
 var localAllowSpecificOrigins = "_localAllowSpecificOrigins";
 var deployedAllowSpecificOrigins = "_deployedAllowSpecificOrigins";
