@@ -10,7 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using Cubitwelve.Src.Exceptions;
-using Npgsql; // <--- ESTE ES EL QUE PROBABLEMENTE FALTABA
+using Npgsql;
 
 namespace Cubitwelve.Src.Extensions
 {
