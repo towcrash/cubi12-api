@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using Cubitwelve.Src.Exceptions;
+using Npgsql; // <--- ESTE ES EL QUE PROBABLEMENTE FALTABA
 
 namespace Cubitwelve.Src.Extensions
 {
@@ -47,20 +48,16 @@ namespace Cubitwelve.Src.Extensions
             services.AddSwaggerGen(c =>
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Cubitwelve API", Version = "v1" })
             );
-
         }
 
         private static void AddDbContext(IServiceCollection services)
         {
             var connectionUrl = Env.GetString("DB_CONNECTION");
-
+            
             var connectionString = BuildConnectionString(connectionUrl);
 
-
-            services.AddDbContext<DataContext>(opt =>
-            {
-                opt.UseNpgsql(connectionString, npgsqlOpt =>
-                {
+            services.AddDbContext<DataContext>(opt => {
+                opt.UseNpgsql(connectionString, npgsqlOpt => {
                     npgsqlOpt.EnableRetryOnFailure(
                         maxRetryCount: 10,
                         maxRetryDelay: System.TimeSpan.FromSeconds(30),
@@ -69,6 +66,38 @@ namespace Cubitwelve.Src.Extensions
                 });
             });
         }
+
+        private static string BuildConnectionString(string connectionUrl)
+        {
+            if (string.IsNullOrEmpty(connectionUrl) || !connectionUrl.StartsWith("postgres://"))
+            {
+                return connectionUrl;
+            }
+
+            try 
+            {
+                var databaseUri = new Uri(connectionUrl);
+                var userInfo = databaseUri.UserInfo.Split(':');
+
+                var builder = new NpgsqlConnectionStringBuilder
+                {
+                    Host = databaseUri.Host,
+                    Port = databaseUri.Port,
+                    Username = userInfo[0],
+                    Password = userInfo[1],
+                    Database = databaseUri.LocalPath.TrimStart('/'),
+                    SslMode = SslMode.Disable 
+                };
+
+                return builder.ToString();
+            }
+            catch
+            {
+               
+                return connectionUrl;
+            }
+        }
+   
 
         private static void AddUnitOfWork(IServiceCollection services)
         {
@@ -103,31 +132,5 @@ namespace Cubitwelve.Src.Extensions
         {
             services.AddHttpContextAccessor();
         }
-        private static string BuildConnectionString(string connectionUrl)
-        {
-           
-            if (string.IsNullOrEmpty(connectionUrl) || !connectionUrl.StartsWith("postgres://"))
-            {
-                return connectionUrl;
-            }
-
-            
-            var databaseUri = new Uri(connectionUrl);
-            var userInfo = databaseUri.UserInfo.Split(':');
-
-          
-            var builder = new NpgsqlConnectionStringBuilder
-            {
-                Host = databaseUri.Host,
-                Port = databaseUri.Port,
-                Username = userInfo[0],
-                Password = userInfo[1],
-                Database = databaseUri.LocalPath.TrimStart('/'),
-                SslMode = SslMode.Disable 
-            };
-
-            return builder.ToString();
-        }
-
     }
 }
